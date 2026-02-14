@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CreateUserDto } from './entities/create_user.dto';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
@@ -12,7 +12,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Post('seed')
+  @Post('seed-users')
   async seed(@Body('count') count: number) {
     return this.userService.seed(count);
   }
@@ -23,11 +23,11 @@ export class UserController {
   }
 
   @Get('get-user/:id')
-  async findOneById(@Body('id') id: string): Promise<User | null> {
+  async findOneById(@Param('id') id: string): Promise<User | null> {
     return this.userService.findOneById(id);
   }
 
-  @Delete('all-clear')
+  @Delete('clear-all-users')
   async clearAll() {
     return this.userService.clearAll();
   }

@@ -8,7 +8,6 @@ import { Model } from 'mongoose';
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-
   private readonly logger = new Logger(UserService.name);
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -36,8 +35,11 @@ export class UserService {
   }
 
   async findOneById(id: string): Promise<User | null> {
-    const user = await this.userModel.findById(id).exec();
+    const user: User | null = await this.userModel.findOne({ _id: id }).exec();
+
     if (user) this.logger.log(`🔍 Found user with ID: ${id}`);
+    else this.logger.warn(`❌ No user found with ID: ${id}`);
+
     return user;
   }
 
