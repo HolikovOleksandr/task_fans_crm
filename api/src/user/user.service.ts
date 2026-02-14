@@ -1,7 +1,9 @@
+import { CreateUserDto } from './entities/create_user.dto';
+import { FindUsersQueryDto } from './entities/find_users.query.dto';
+import { PaginatedResponseDto } from './entities/paginated.response.dto';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './entities/create_user.dto';
 import { faker } from '@faker-js/faker';
 import { Model } from 'mongoose';
 
@@ -28,14 +30,27 @@ export class UserService {
     return this.userModel.insertMany(users);
   }
 
-  async findAll(): Promise<User[]> {
-    const allUsers = await this.userModel.find().exec();
-    this.logger.log(`📋 Found ${allUsers.length} users`);
-    return allUsers;
+  async findAll(query: FindUsersQueryDto): Promise<PaginatedResponseDto<User>> {
+    const { page = 1, limit = 20, name, email, phone } = query;
+    const filter: Record<string, unknown> = {};
+    const skip = (page - 1) * limit;
+
+    if (name) filter.name = name;
+    if (email) filter.email = email;
+    if (phone) filter.phone = phone;
+
+    const [data, total] = await Promise.all([
+      this.userModel.find(filter).skip(skip).limit(limit).lean().exec(),
+      this.userModel.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    this.logger.log(`📊 Found ${total} users.`);
+    return new PaginatedResponseDto(data, total, page, totalPages);
   }
 
   async findOneById(id: string): Promise<User | null> {
-    const user: User | null = await this.userModel.findOne({ _id: id }).exec();
+    const user: User | null = await this.userModel.findById(id).exec();
 
     if (user) this.logger.log(`🔍 Found user with ID: ${id}`);
     else this.logger.warn(`❌ No user found with ID: ${id}`);

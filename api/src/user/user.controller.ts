@@ -1,7 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CreateUserDto } from './entities/create_user.dto';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { FindUsersQueryDto } from './entities/find_users.query.dto';
+import { PaginatedResponseDto } from './entities/paginated.response.dto';
 
 @Controller()
 export class UserController {
@@ -18,8 +28,10 @@ export class UserController {
   }
 
   @Get('get-users')
-  async findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  async findAll(
+    @Query() query: FindUsersQueryDto,
+  ): Promise<PaginatedResponseDto<User>> {
+    return this.userService.findAll(query);
   }
 
   @Get('get-user/:id')
