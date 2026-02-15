@@ -1,6 +1,6 @@
 import { CreateUserDto } from './entities/create_user.dto';
 import { FindUsersQueryDto } from './entities/find_users.query.dto';
-import { PaginatedResponseDto } from './entities/paginated.response.dto';
+import { PaginatedDto } from './entities/paginated.dto';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
@@ -38,7 +38,7 @@ export class UserService {
     this.logger.log(`✅ Finished seeding ${count} users`);
   }
 
-  async findAll(query: FindUsersQueryDto): Promise<PaginatedResponseDto<User>> {
+  async findAll(query: FindUsersQueryDto): Promise<PaginatedDto<User>> {
     const { page = 1, limit = 20, name, email, phone } = query;
     const filter: Record<string, unknown> = {};
     const skip = (page - 1) * limit;
@@ -57,7 +57,7 @@ export class UserService {
       ` 📄 Returned ${data.length} users (page ${page}/${totalPages}), total=${total}`,
     );
 
-    return new PaginatedResponseDto(data, total, page, totalPages);
+    return { data, total, page, totalPages };
   }
 
   async findOneById(id: string): Promise<User | null> {

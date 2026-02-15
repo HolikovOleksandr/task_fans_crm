@@ -35,6 +35,22 @@
     "vite": "^8.0.0-beta.13",
     "wait-on": "^9.0.4"
   },
+  "build": {
+    "appId": "com.taskfanscrm.app",
+    "productName": "Task Fans CRM",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis"
+    }
+  },
   "overrides": {
     "vite": "^8.0.0-beta.13"
   }
