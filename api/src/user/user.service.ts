@@ -19,15 +19,23 @@ export class UserService {
   }
 
   async seed(count: number) {
-    const users: CreateUserDto[] = Array.from({ length: count }, () => ({
-      name: faker.person.firstName(),
-      email: faker.internet.email(),
-      phone: faker.phone.number(),
-      birthDate: faker.date.birthdate(),
-    }));
+    const batchSize = 10_000;
+    this.logger.log(`🚀 Starting to seed ${count} users`);
 
-    this.logger.log(`🎲 Mocking ${count} users...`);
-    return this.userModel.insertMany(users);
+    for (let inserted = 0; inserted < count; inserted += batchSize) {
+      const size = Math.min(batchSize, count - inserted);
+
+      const batch = Array.from({ length: size }, () => ({
+        name: faker.person.firstName(),
+        email: faker.internet.email(),
+        phone: faker.phone.number(),
+        birthDate: faker.date.birthdate(),
+      }));
+
+      await this.userModel.collection.insertMany(batch, { ordered: false });
+    }
+
+    this.logger.log(`✅ Finished seeding ${count} users`);
   }
 
   async findAll(query: FindUsersQueryDto): Promise<PaginatedResponseDto<User>> {

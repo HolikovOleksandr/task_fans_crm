@@ -28,7 +28,8 @@ export class UserController {
 
   @Post('seed-users')
   async seed(@Body('count') count: number) {
-    return this.userService.seed(count);
+    await this.userService.seed(count);
+    return { message: `Seeded ${count} users` };
   }
 
   @Get('get-users')
