@@ -33,7 +33,7 @@ export default function Auth() {
       const data: { access_token: string } = await res.json();
       localStorage.setItem("token", data.access_token);
 
-      navigate("/users");
+      navigate("/");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {

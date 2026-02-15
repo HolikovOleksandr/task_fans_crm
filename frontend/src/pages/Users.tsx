@@ -251,14 +251,6 @@ export default function Users() {
                   <Typography>
                     <b>Phone:</b> {selected.phone}
                   </Typography>
-                  <Typography>
-                    <b>Created:</b>{" "}
-                    {new Date(selected.createdAt).toLocaleString()}
-                  </Typography>
-                  <Typography>
-                    <b>Updated:</b>{" "}
-                    {new Date(selected.updatedAt).toLocaleString()}
-                  </Typography>
                 </Stack>
               )}
             </CardContent>
