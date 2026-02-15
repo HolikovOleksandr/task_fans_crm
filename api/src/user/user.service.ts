@@ -31,7 +31,13 @@ export class UserService {
   }
 
   async findAll(query: FindUsersQueryDto): Promise<PaginatedResponseDto<User>> {
-    const { page = 1, limit = 20, name, email, phone } = query;
+    const {
+      page = 1,
+      limit = 20,
+      name,
+      email,
+      phone,
+    } = query as FindUsersQueryDto;
     const filter: Record<string, unknown> = {};
     const skip = (page - 1) * limit;
 

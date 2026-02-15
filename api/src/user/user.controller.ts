@@ -6,14 +6,17 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './entities/create_user.dto';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { FindUsersQueryDto } from './entities/find_users.query.dto';
 import { PaginatedResponseDto } from './entities/paginated.response.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller()
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
