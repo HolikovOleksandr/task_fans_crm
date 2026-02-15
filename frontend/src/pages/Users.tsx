@@ -15,33 +15,34 @@ type Response = {
   totalPages: number;
 };
 
+const apiUrl = "http://localhost:3001/api/v1";
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/api/v1/get-users?page=${page}&limit=20`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data: Response) => setUsers(data.data));
+    const load = async () => {
+      const res = await fetch(`${apiUrl}/get-users?page=${page}&limit=20`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+        },
+      });
+
+      if (!res.ok) return;
+
+      const data: Response = await res.json();
+      setUsers(data.data);
+      setTotalPages(data.totalPages || 1);
+    };
+
+    void load();
   }, [page]);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Users</h2>
-
-      <table border={1} cellPadding={6}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Birth</th>
-          </tr>
-        </thead>
+    <div>
+      <table border={1}>
         <tbody>
           {users.map((u) => (
             <tr key={u._id}>
@@ -54,12 +55,16 @@ export default function UsersPage() {
         </tbody>
       </table>
 
-      <br />
-
-      <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+      <button onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
         Prev
       </button>
-      <button onClick={() => setPage((p) => p + 1)}>Next</button>
+
+      <button
+        onClick={() => setPage((p) => p + 1)}
+        disabled={page >= totalPages}
+      >
+        Next
+      </button>
     </div>
   );
 }
