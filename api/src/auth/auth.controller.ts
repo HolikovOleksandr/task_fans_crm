@@ -3,6 +3,7 @@ import {
   Post,
   Headers,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +17,8 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
+  private readonly logger = new Logger(AuthController.name);
+
   @Post('token')
   issue(@Headers('x-api-key') apiKey?: string): IssueTokenResponse {
     const validKey = this.config.getOrThrow<string>('AUTH_API_KEY');
@@ -28,6 +31,7 @@ export class AuthController {
       access_token: this.jwt.sign(payload),
     };
 
+    this.logger.log(`🔐  Issued token for API client`);
     return access_token;
   }
 }

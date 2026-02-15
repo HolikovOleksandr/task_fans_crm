@@ -53,7 +53,10 @@ export class UserService {
     ]);
 
     const totalPages = Math.ceil(total / limit);
-    this.logger.log(`📊 Found ${total} users.`);
+    this.logger.log(
+      ` 📄 Returned ${data.length} users (page ${page}/${totalPages}), total=${total}`,
+    );
+
     return new PaginatedResponseDto(data, total, page, totalPages);
   }
 
