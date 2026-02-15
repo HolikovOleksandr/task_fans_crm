@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -39,7 +40,9 @@ export class UserController {
 
   @Get('get-user/:id')
   async findOneById(@Param('id') id: string): Promise<User | null> {
-    return this.userService.findOneById(id);
+    const user = await this.userService.findOneById(id);
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
   @Delete('clear-all-users')
