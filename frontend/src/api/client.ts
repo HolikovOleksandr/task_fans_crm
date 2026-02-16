@@ -2,6 +2,14 @@ import type { PaginatedResponseDto, UserDto } from "../types/user";
 
 type HttpMethod = "GET" | "POST" | "DELETE";
 
+export type UsersQuery = {
+  page?: number;
+  limit?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+};
+
 export class ApiClient {
   private readonly baseUrl: string;
 
@@ -34,27 +42,35 @@ export class ApiClient {
     return (await res.json()) as T;
   }
 
-  // ---------- ROUTES ----------
-  addUser(payload: Omit<UserDto, "_id" | "createdAt" | "updatedAt">) {
-    return this.request<UserDto>("/add-user", "POST", payload);
+  addUser(payload: Omit<UserDto, "_id">) {
+    return this.request<UserDto>("/users", "POST", payload);
   }
 
   seedUsers(count: number) {
-    return this.request<void>("/seed-users", "POST", { count });
+    return this.request<{ message: string }>("/users/seed", "POST", { count });
   }
 
-  getUsers(page = 1) {
+  getUsers(query: UsersQuery = {}) {
+    const params = new URLSearchParams();
+
+    params.set("page", String(query.page ?? 1));
+    params.set("limit", String(query.limit ?? 20));
+
+    if (query.name?.trim()) params.set("name", query.name.trim());
+    if (query.email?.trim()) params.set("email", query.email.trim());
+    if (query.phone?.trim()) params.set("phone", query.phone.trim());
+
     return this.request<PaginatedResponseDto<UserDto>>(
-      `/get-users?page=${page}`,
+      `/users?${params.toString()}`,
       "GET",
     );
   }
 
   getUser(id: string) {
-    return this.request<UserDto>(`/get-user/${id}`, "GET");
+    return this.request<UserDto>(`/users/${id}`, "GET");
   }
 
   clearAllUsers() {
-    return this.request<void>("/clear-all-users", "DELETE");
+    return this.request<{ deletedCount: number }>("/users", "DELETE");
   }
 }

@@ -17,6 +17,15 @@ import {
 } from "@mui/material";
 import { ApiClient } from "../api/client";
 import type { UserDto } from "../types/user";
+import type { UsersQuery } from "../api/client";
+
+type Filters = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+const DEFAULT_LIMIT = 20;
 
 export default function Users() {
   const api = useMemo(() => new ApiClient("http://localhost:3001/api/v1"), []);
@@ -24,25 +33,45 @@ export default function Users() {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [selected, setSelected] = useState<UserDto | null>(null);
 
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
-  const [seedCount, setSeedCount] = useState(1000);
+  const [seedCount, setSeedCount] = useState<number>(1000);
+
+  const [filters, setFilters] = useState<Filters>({
+    name: "",
+    email: "",
+    phone: "",
+  });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
   const loadUsers = async (p = 1) => {
+    const nextPage = Number(p) || 1;
+
     setLoading(true);
     setError("");
 
     try {
-      const res = await api.getUsers(p);
+      const query: UsersQuery = {
+        page: nextPage,
+        limit: DEFAULT_LIMIT,
+        name: filters.name,
+        email: filters.email,
+        phone: filters.phone,
+      };
+
+      const res = await api.getUsers(query);
+
       setUsers(res.data);
-      setPage(res.page);
-      setTotal(res.total);
-      setTotalPages(res.totalPages);
+      // страховка на випадок, якщо бек раптом віддасть строки
+      setPage(Number((res as unknown as { page: unknown }).page) || nextPage);
+      setTotal(Number((res as unknown as { total: unknown }).total) || 0);
+      setTotalPages(
+        Number((res as unknown as { totalPages: unknown }).totalPages) || 1,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -65,6 +94,7 @@ export default function Users() {
       setSelected(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
+    } finally {
       setLoading(false);
     }
   };
@@ -87,6 +117,11 @@ export default function Users() {
     }
   };
 
+  const handleApplyFilters = async () => {
+    setSelected(null);
+    await loadUsers(1);
+  };
+
   const canPrev = !loading && page > 1;
   const canNext = !loading && page < totalPages;
 
@@ -106,7 +141,7 @@ export default function Users() {
 
         {error && <Alert severity="error">{error}</Alert>}
 
-        {/* Actions */}
+        {/* Actions + Filters */}
         <Card>
           <CardContent>
             <Stack
@@ -118,7 +153,7 @@ export default function Users() {
                 label="Seed count"
                 type="number"
                 value={seedCount}
-                onChange={(e) => setSeedCount(Number(e.target.value))}
+                onChange={(e) => setSeedCount(Number(e.target.value) || 0)}
                 sx={{ width: { xs: "100%", sm: 180 } }}
                 inputProps={{ min: 0 }}
               />
@@ -144,6 +179,59 @@ export default function Users() {
                 disabled={loading}
               >
                 Refresh
+              </Button>
+            </Stack>
+
+            {/* Filters */}
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems={{ md: "center" }}
+              sx={{ mt: 2 }}
+            >
+              <TextField
+                label="Name"
+                value={filters.name}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, name: e.target.value }))
+                }
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Email"
+                value={filters.email}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, email: e.target.value }))
+                }
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Phone"
+                value={filters.phone}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, phone: e.target.value }))
+                }
+                sx={{ flex: 1 }}
+              />
+
+              <Button
+                variant="outlined"
+                onClick={handleApplyFilters}
+                disabled={loading}
+              >
+                Apply
+              </Button>
+
+              <Button
+                variant="text"
+                onClick={() => {
+                  setFilters({ name: "", email: "", phone: "" });
+                  setSelected(null);
+                  void loadUsers(1);
+                }}
+                disabled={loading}
+              >
+                Reset
               </Button>
             </Stack>
           </CardContent>
@@ -219,6 +307,7 @@ export default function Users() {
                 <Button disabled={!canNext} onClick={() => loadUsers(page + 1)}>
                   Next
                 </Button>
+
                 {loading && (
                   <Typography color="text.secondary" sx={{ ml: "auto" }}>
                     Loading...

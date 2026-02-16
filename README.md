@@ -14,7 +14,7 @@ cd task_fans_crm
 
 ## Environment
 
-Create `.env` in `backend/`:
+Create `.env` in `api/`:
 
 ```env
 PORT=3001
@@ -30,13 +30,12 @@ JWT_EXPIRES=30m
 docker compose up -d --build
 ```
 
-## API Docs (Swagger)
+## After the app is running
 
-After the app is running, open:
+> Note: If you use a different `PORT`, replace accordingly.
 
-- http://localhost:3001/swagger
-
-> Note: If you use a different `PORT`, replace `3001` accordingly.
+- **API Docs (Swagger):** [http://localhost:3001/swagger](http://localhost:3001/swagger)
+- **Web client:** [http://localhost:5173](http://localhost:5173)
 
 ## Notes
 
